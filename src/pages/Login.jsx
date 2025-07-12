@@ -32,37 +32,42 @@ const Login = () => {
   }, []);
 
   const handleLogin = () => {
-    if (!role || !email || !password) {
-      alert('Please fill all fields');
-      return;
-    }
+  if (!role || !email || !password) {
+    alert('Please fill all fields');
+    return;
+  }
 
-    const users = JSON.parse(localStorage.getItem('users')) || [];
-    const userWithRole = users.find(
-      (u) => u.email.toLowerCase() === email.toLowerCase() && u.role === role
-    );
+  const users = JSON.parse(localStorage.getItem('users')) || [];
 
-    if (!userWithRole || userWithRole.password !== password) {
-      alert('Invalid email or password');
-      return;
-    }
+  // First, check if email + password match
+  const user = users.find(
+    (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
+  );
 
-    if (role === 'manager' && !userWithRole.projects) {
+  if (!user) {
+    alert('Invalid email or password');
+    return;
+  }
+
+  // Then check if role matches
+  if (user.role !== role) {
+    if (role === 'manager') {
       alert('You are not assigned any projects yet!');
-      return;
-    }
-
-    if (role === 'employee' && !userWithRole.tasks) {
+    } else if (role === 'employee') {
       alert('You are not assigned any tasks yet!');
-      return;
+    } else {
+      alert('Invalid email or password');
     }
+    return;
+  }
 
-    localStorage.setItem('currentUser', JSON.stringify(userWithRole));
+  // All good: proceed to login
+  localStorage.setItem('currentUser', JSON.stringify(user));
 
-    if (role === 'admin') navigate('/admin');
-    else if (role === 'manager') navigate('/manager');
-    else if (role === 'employee') navigate('/employee');
-  };
+  if (role === 'admin') navigate('/admin');
+  else if (role === 'manager') navigate('/manager');
+  else if (role === 'employee') navigate('/employee');
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-dark blue-200 to-blue-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-all duration-1000 relative overflow-hidden">
