@@ -27,7 +27,7 @@ const Login = () => {
       localStorage.setItem('users', JSON.stringify(updatedUsers));
     }
   };
-
+  ensureAdminExists();
   useEffect(() => {
     ensureAdminExists();
   }, []);
