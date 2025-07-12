@@ -9,10 +9,12 @@ const Login = () => {
   const [role, setRole] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  // ✅ Ensures admin exists on any device
-  const ensureAdminExists = () => {
+  // ✅ Ensure Admin exists on first mount
+  useEffect(() => {
     const users = JSON.parse(localStorage.getItem('users')) || [];
-    const hasAdmin = users.find((u) => u.email === 'admin@gmail.com' && u.role === 'admin');
+    const hasAdmin = users.find(
+      (u) => u.email === 'admin@gmail.com' && u.role === 'admin'
+    );
 
     if (!hasAdmin) {
       const updatedUsers = [
@@ -26,10 +28,6 @@ const Login = () => {
       ];
       localStorage.setItem('users', JSON.stringify(updatedUsers));
     }
-  };
-  ensureAdminExists();
-  useEffect(() => {
-    ensureAdminExists();
   }, []);
 
   const handleLogin = () => {
@@ -39,7 +37,6 @@ const Login = () => {
     }
 
     const users = JSON.parse(localStorage.getItem('users')) || [];
-
     const userWithRole = users.find(
       (u) => u.email.toLowerCase() === email.toLowerCase() && u.role === role
     );
@@ -68,15 +65,15 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-dark blue-200 to-blue-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-all duration-1000 relative overflow-hidden">
-      {/* Floating Animated Circles */}
+      {/* Background effects */}
       <div className="absolute w-80 h-80 bg-blue-300 dark:bg-blue-900 opacity-30 rounded-full top-10 left-10 animate-pulse blur-3xl" />
       <div className="absolute w-60 h-60 bg-purple-300 dark:bg-purple-800 opacity-30 rounded-full bottom-10 right-10 animate-ping blur-2xl" />
 
-      {/* Card */}
+      {/* Login card */}
       <div className="w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-xl z-10 p-8">
         <h2 className="text-3xl font-bold text-center mb-6 text-gray-800 dark:text-gray-100">Login</h2>
 
-        {/* Role */}
+        {/* Role selector */}
         <div className="mb-4">
           <label className="block text-gray-700 dark:text-gray-300 font-medium mb-1">Select Role</label>
           <select
