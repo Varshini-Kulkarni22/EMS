@@ -11,6 +11,7 @@ const Login = () => {
 
   // ✅ Ensure Admin exists on first mount
   useEffect(() => {
+    console.log("Creating default admin...");
     const users = JSON.parse(localStorage.getItem('users')) || [];
     const hasAdmin = users.find(
       (u) => u.email === 'admin@gmail.com' && u.role === 'admin'
