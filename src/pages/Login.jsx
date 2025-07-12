@@ -9,9 +9,10 @@ const Login = () => {
   const [role, setRole] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
+  // ✅ Ensures admin exists on any device
   const ensureAdminExists = () => {
     const users = JSON.parse(localStorage.getItem('users')) || [];
-    const hasAdmin = users.find((u) => u.role === 'admin');
+    const hasAdmin = users.find((u) => u.email === 'admin@gmail.com' && u.role === 'admin');
 
     if (!hasAdmin) {
       const updatedUsers = [
@@ -40,22 +41,21 @@ const Login = () => {
     const users = JSON.parse(localStorage.getItem('users')) || [];
 
     const userWithRole = users.find(
-      (u) => u.email === email && u.role === role
+      (u) => u.email.toLowerCase() === email.toLowerCase() && u.role === role
     );
 
-    if (!userWithRole) {
-      if (role === 'manager') {
-        alert('You are not assigned any projects yet!');
-      } else if (role === 'employee') {
-        alert('You are not assigned any tasks yet!');
-      } else {
-        alert('Invalid email or password');
-      }
+    if (!userWithRole || userWithRole.password !== password) {
+      alert('Invalid email or password');
       return;
     }
 
-    if (userWithRole.password !== password) {
-      alert('Invalid email or password');
+    if (role === 'manager' && !userWithRole.projects) {
+      alert('You are not assigned any projects yet!');
+      return;
+    }
+
+    if (role === 'employee' && !userWithRole.tasks) {
+      alert('You are not assigned any tasks yet!');
       return;
     }
 
@@ -68,7 +68,6 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-dark blue-200 to-blue-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-all duration-1000 relative overflow-hidden">
-      
       {/* Floating Animated Circles */}
       <div className="absolute w-80 h-80 bg-blue-300 dark:bg-blue-900 opacity-30 rounded-full top-10 left-10 animate-pulse blur-3xl" />
       <div className="absolute w-60 h-60 bg-purple-300 dark:bg-purple-800 opacity-30 rounded-full bottom-10 right-10 animate-ping blur-2xl" />
