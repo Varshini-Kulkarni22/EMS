@@ -11,10 +11,12 @@ import Settings from './pages/Settings';
 import UserManagement from './pages/UserManagement';
 import Dashboard from './pages/Dashboard';
 import Reports from './pages/Reports';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const App = () => {
   const currentUser = JSON.parse(localStorage.getItem('currentUser'));
 
-  return (
+  return (<>
     <Router>
       <div className="p-4">
         {/* {!currentUser && (
@@ -40,6 +42,8 @@ const App = () => {
         </Routes>
       </div>
     </Router>
+    <ToastContainer position="top-right" autoClose={2000} />
+    </>
   );
 };
 

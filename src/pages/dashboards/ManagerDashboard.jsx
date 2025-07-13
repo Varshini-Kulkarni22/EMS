@@ -102,29 +102,60 @@ const ManagerDashboard = () => {
     localStorage.setItem(`empTasks_${currentUser.email}`, JSON.stringify(tasks));
   };
 
-  const addEmployee = () => {
-    const allUsers = JSON.parse(localStorage.getItem('users')) || [];
-    const exists = allUsers.find((u) => u.email === newEmp.email);
-    if (exists) return alert('Email already exists');
+  const deleteEmployee = (email) => {
+    const updatedUsers = JSON.parse(localStorage.getItem('users')).filter(u => u.email !== email);
+    localStorage.setItem('users', JSON.stringify(updatedUsers));
 
-    const emp = {
-      ...newEmp,
-      role: 'employee',
-      manager: currentUser.email,
-    };
+    const updatedTasks = { ...employeeTasks };
+    delete updatedTasks[email];
+    localStorage.setItem(`empTasks_${currentUser.email}`, JSON.stringify(updatedTasks));
 
-    const updated = [...allUsers, emp];
-    localStorage.setItem('users', JSON.stringify(updated));
-    setEmployees([...employees, emp]);
-    setNewEmp({ name: '', email: '', password: '' });
+    setEmployees(employees.filter(emp => emp.email !== email));
+    setEmployeeTasks(updatedTasks);
   };
+
+ const isValidEmail = (email) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+const addEmployee = () => {
+  const allUsers = JSON.parse(localStorage.getItem('users')) || [];
+
+  if (!newEmp.name || !newEmp.email || !newEmp.password) {
+    alert("Please fill all fields.");
+    return;
+  }
+
+  if (!isValidEmail(newEmp.email)) {
+    alert("Please enter a valid email address.");
+    return;
+  }
+
+  const exists = allUsers.find((u) => u.email === newEmp.email);
+  if (exists) return alert('Email already exists');
+
+  const emp = {
+    ...newEmp,
+    role: 'employee',
+    manager: currentUser.email,
+  };
+
+  const updated = [...allUsers, emp];
+  localStorage.setItem('users', JSON.stringify(updated));
+  setEmployees([...employees, emp]);
+  setNewEmp({ name: '', email: '', password: '' });
+};
+
+  
 
   const logout = () => {
     localStorage.removeItem('currentUser');
     navigate('/login');
   };
 
-  const theme = localStorage.getItem(`theme_${currentUser.email}`) || 'light';
+  const theme = localStorage.getItem('app_theme') || 'light';
+
 
   return (
     <div className={`p-6 min-h-screen transition-all ${theme === 'dark' ? 'bg-gray-900 text-gray-100' : 'bg-gray-100 text-gray-900'}`}>
@@ -149,6 +180,7 @@ const ManagerDashboard = () => {
         )}
       </div>
 
+     
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {Object.entries(columns).map(([colId, col]) => (
@@ -183,28 +215,50 @@ const ManagerDashboard = () => {
         </div>
       </DragDropContext>
 
-      <div className="mt-10 p-4 rounded shadow bg-white dark:bg-gray-800">
-        <h2 className="text-xl font-semibold mb-4">Add Employee</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-          <input placeholder="Name" className="px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 text-black dark:text-white" value={newEmp.name} onChange={(e) => setNewEmp({ ...newEmp, name: e.target.value })} />
-          <input placeholder="Email" className="px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 text-black dark:text-white" value={newEmp.email} onChange={(e) => setNewEmp({ ...newEmp, email: e.target.value })} />
-          <input placeholder="Password" className="px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 text-black dark:text-white" value={newEmp.password} onChange={(e) => setNewEmp({ ...newEmp, password: e.target.value })} />
-        </div>
-        <button onClick={addEmployee} className="mt-4 bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-white">Add</button>
-      </div>
-
       <div className="mt-10">
+        <div className="mt-10 p-4 rounded shadow bg-white dark:bg-gray-800">
+  <h2 className="text-xl font-semibold mb-4">Add New Employee</h2>
+  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+    <input
+      placeholder="Name"
+      value={newEmp.name}
+      onChange={(e) => setNewEmp({ ...newEmp, name: e.target.value })}
+      className="px-3 py-2 rounded bg-gray-100 dark:bg-gray-700 text-black dark:text-white"
+    />
+    <input
+      placeholder="Email"
+      value={newEmp.email}
+      onChange={(e) => setNewEmp({ ...newEmp, email: e.target.value })}
+      className="px-3 py-2 rounded bg-gray-100 dark:bg-gray-700 text-black dark:text-white"
+    />
+    <input
+      type="password"
+      placeholder="Password"
+      value={newEmp.password}
+      onChange={(e) => setNewEmp({ ...newEmp, password: e.target.value })}
+      className="px-3 py-2 rounded bg-gray-100 dark:bg-gray-700 text-black dark:text-white"
+    />
+  </div>
+  <button
+    onClick={addEmployee}
+    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+  >
+    + Add Employee
+  </button>
+</div>
+
         <h2 className="text-xl font-semibold mb-4">Your Employees</h2>
         {employees.length === 0 ? (
           <p className="text-gray-600 dark:text-gray-400">No employees added yet.</p>
         ) : (
+
           employees.map((emp) => (
             <div key={emp.email} className="p-4 rounded shadow bg-white dark:bg-gray-800 my-4">
               <p><strong>Name:</strong> {emp.name}</p>
               <p><strong>Email:</strong> {emp.email}</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
                 <input placeholder="Task" className="px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 text-black dark:text-white" value={taskInputs[emp.email]?.task || ''} onChange={(e) => handleTaskInputChange(emp.email, 'task', e.target.value)} />
-                <input type="date"  placeholder="Deadline" className="px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 text-black dark:text-white" value={taskInputs[emp.email]?.dueDate || ''} onChange={(e) => handleTaskInputChange(emp.email, 'dueDate', e.target.value)} />
+                <input type="date" placeholder="Deadline" className="px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 text-black dark:text-white" value={taskInputs[emp.email]?.dueDate || ''} onChange={(e) => handleTaskInputChange(emp.email, 'dueDate', e.target.value)} />
                 <select className="px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 text-black dark:text-white" value={taskInputs[emp.email]?.priority || 'Medium'} onChange={(e) => handleTaskInputChange(emp.email, 'priority', e.target.value)}>
                   <option>High</option>
                   <option>Medium</option>
@@ -212,7 +266,8 @@ const ManagerDashboard = () => {
                 </select>
                 <input placeholder="Comment" className="px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 text-black dark:text-white" value={taskInputs[emp.email]?.comment || ''} onChange={(e) => handleTaskInputChange(emp.email, 'comment', e.target.value)} />
               </div>
-              <button onClick={() => assignTaskToEmployee(emp.email)} className="mt-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-white">Assign Task</button>
+              <button disabled={!taskInputs[emp.email]?.task} onClick={() => assignTaskToEmployee(emp.email)} className={`mt-2 px-4 py-2 rounded text-white ${taskInputs[emp.email]?.task ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'}`}>Assign Task</button>
+              <button onClick={() => deleteEmployee(emp.email)} className="mt-2 ml-2 bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-white text-sm">Delete Employee</button>
               <div className="mt-4">
                 <h4 className="font-semibold mb-2">Assigned Tasks:</h4>
                 <ul className="list-disc pl-4">
@@ -221,7 +276,10 @@ const ManagerDashboard = () => {
                       <div>
                         <span className="font-medium">{task.task}</span><br />
                         <span className="text-sm text-gray-700 dark:text-gray-300">📅 {task.dueDate || 'N/A'} | ⚠️ {task.priority}</span><br />
-                        {task.comment && <span className="text-sm italic text-gray-600 dark:text-gray-300">💬 {task.comment}</span>}
+                        {task.comment && <span className="text-sm italic text-gray-600 dark:text-gray-300">💬 {task.comment}</span>}<br />
+                        <span className="text-sm text-green-600 font-medium">
+                          {task.status === 'Done' ? '✅ Completed' : '🕒 In Progress'}
+                        </span>
                       </div>
                       <button onClick={() => removeTaskFromEmployee(emp.email, task.id)} className="text-red-500 ml-2">✕</button>
                     </li>

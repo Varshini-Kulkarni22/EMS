@@ -1,9 +1,10 @@
-// AdminDashboard.jsx
 import React, { useContext, useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { UserContext } from '../../contexts/UserContext';
 import { v4 as uuid } from 'uuid';
-import { User, BarChart2, Settings, ArrowRightCircle } from 'lucide-react';
+import { User, BarChart2, Settings } from 'lucide-react';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ const AdminDashboard = () => {
   const [taskInputs, setTaskInputs] = useState({});
   const [managerTasks, setManagerTasks] = useState({});
   const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+
   const [showWelcome, setShowWelcome] = useState(() => {
     const visited = localStorage.getItem('visited');
     if (!visited) {
@@ -40,7 +42,13 @@ const AdminDashboard = () => {
   const managers = users.filter((user) => user.role === 'manager');
 
   const assignTask = (email) => {
-    const newTask = { id: uuid(), task: taskInputs[email], progress: 0 };
+    const taskText = taskInputs[email]?.trim();
+    if (!taskText) {
+      toast.warn('Please enter a task before assigning');
+      return;
+    }
+
+    const newTask = { id: uuid(), task: taskText, progress: 0 };
     const updatedTasks = { ...managerTasks };
 
     if (!Array.isArray(updatedTasks[email])) updatedTasks[email] = [];
@@ -57,12 +65,12 @@ const AdminDashboard = () => {
     existingKanban.todo.items.push(newTask);
     localStorage.setItem(kanbanKey, JSON.stringify(existingKanban));
 
-    alert(`Task assigned to ${email}`);
+    toast.success(`Task assigned to ${email}`);
     setTaskInputs({ ...taskInputs, [email]: '' });
   };
 
   const removeTask = (email, taskId) => {
-    const updatedTasks = (managerTasks[email] || []).filter(t => t.id !== taskId);
+    const updatedTasks = (managerTasks[email] || []).filter((t) => t.id !== taskId);
     const newAllTasks = { ...managerTasks, [email]: updatedTasks };
     setManagerTasks(newAllTasks);
     localStorage.setItem('managerTasks', JSON.stringify(newAllTasks));
@@ -71,10 +79,33 @@ const AdminDashboard = () => {
     const existingKanban = JSON.parse(localStorage.getItem(kanbanKey));
     if (existingKanban) {
       for (let key in existingKanban) {
-        existingKanban[key].items = existingKanban[key].items.filter(t => t.id !== taskId);
+        existingKanban[key].items = existingKanban[key].items.filter((t) => t.id !== taskId);
       }
       localStorage.setItem(kanbanKey, JSON.stringify(existingKanban));
     }
+
+    toast.info('Task removed');
+  };
+
+  const deleteManager = (email) => {
+    const allUsers = JSON.parse(localStorage.getItem('users')) || [];
+    const updatedUsers = allUsers.filter(
+      (u) => u.email !== email && u.manager !== email
+    );
+
+    localStorage.setItem('users', JSON.stringify(updatedUsers));
+
+    // Remove tasks
+    const updatedTasks = { ...managerTasks };
+    delete updatedTasks[email];
+    localStorage.setItem('managerTasks', JSON.stringify(updatedTasks));
+    setManagerTasks(updatedTasks);
+
+    // Remove Kanban
+    localStorage.removeItem(`kanban_${email}`);
+
+    toast.success(`Manager ${email} and their data have been deleted`);
+    window.location.reload(); // or re-fetch users from context
   };
 
   const getProgress = (email) => {
@@ -131,15 +162,23 @@ const AdminDashboard = () => {
                   <input
                     placeholder="Assign Task"
                     value={taskInputs[manager.email] || ''}
-                    onChange={(e) => setTaskInputs({ ...taskInputs, [manager.email]: e.target.value })}
+                    onChange={(e) =>
+                      setTaskInputs({ ...taskInputs, [manager.email]: e.target.value })
+                    }
                     className="border p-2 flex-1 rounded dark:bg-gray-900 dark:text-white"
                   />
-                  <button
-                    onClick={() => assignTask(manager.email)}
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 whitespace-nowrap"
-                  >
-                    Assign
-                  </button>
+                 <button
+  onClick={() => assignTask(manager.email)}
+  disabled={!taskInputs[manager.email]?.trim()}
+  className={`px-4 py-2 rounded text-white ${
+    !taskInputs[manager.email]?.trim()
+      ? 'bg-gray-400 cursor-not-allowed'
+      : 'bg-blue-600 hover:bg-blue-700'
+  }`}
+>
+  Assign
+</button>
+
                 </div>
               </div>
             </div>
@@ -159,6 +198,15 @@ const AdminDashboard = () => {
                   </li>
                 ))}
               </ul>
+            </div>
+
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={() => deleteManager(manager.email)}
+                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-sm"
+              >
+                Delete Manager
+              </button>
             </div>
           </div>
         ))

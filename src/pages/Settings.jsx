@@ -11,10 +11,21 @@ import {
 
 const Settings = () => {
   const navigate = useNavigate();
-  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
-  const [currentUser, setCurrentUser] = useState(() =>
-    JSON.parse(localStorage.getItem('currentUser'))
-  );
+const [currentUser, setCurrentUser] = useState(() =>
+  JSON.parse(localStorage.getItem('currentUser'))
+);
+ const [theme, setTheme] = useState(() => localStorage.getItem('app_theme') || 'light');
+
+useEffect(() => {
+  const html = document.documentElement;
+  if (theme === 'dark') {
+    html.classList.add('dark');
+  } else {
+    html.classList.remove('dark');
+  }
+  localStorage.setItem('app_theme', theme); // global
+}, [theme]);
+;
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [avatar, setAvatar] = useState('');
@@ -45,29 +56,30 @@ useEffect(() => {
   // }, [theme]);
   //const [theme, setTheme] = useState('light');
 
-useEffect(() => {
-  if (currentUser) {
-    const storedTheme = localStorage.getItem(`theme_${currentUser.email}`);
-    if (storedTheme) setTheme(storedTheme);
-  }
-}, [currentUser]);
+// useEffect(() => {
+//   if (currentUser) {
+//     const storedTheme = localStorage.getItem(`theme_${currentUser.email}`);
+//     if (storedTheme) setTheme(storedTheme);
+//   }
+// }, [currentUser]);
 
-useEffect(() => {
-  const html = document.documentElement;
-  if (theme === 'dark') {
-    html.classList.add('dark');
-  } else {
-    html.classList.remove('dark');
-  }
-  if (currentUser) {
-    localStorage.setItem(`theme_${currentUser.email}`, theme);
-  }
-}, [theme, currentUser]);
+// useEffect(() => {
+//   const html = document.documentElement;
+//   if (theme === 'dark') {
+//     html.classList.add('dark');
+//   } else {
+//     html.classList.remove('dark');
+//   }
+//   if (currentUser) {
+//     localStorage.setItem(`theme_${currentUser.email}`, theme);
+//   }
+// }, [theme, currentUser]);
 
 
   const handleThemeToggle = () => {
-    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
-  };
+  setTheme(prev => prev === 'light' ? 'dark' : 'light');
+};
+
 
   const logout = () => {
     localStorage.removeItem('currentUser');

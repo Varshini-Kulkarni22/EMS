@@ -19,26 +19,37 @@ const UserManagement = () => {
     }
   }, [currentUser, navigate]);
 
-  const handleAddManager = () => {
-    if (!name || !email || !password) {
-      alert("Please fill all fields.");
-      return;
-    }
+  const isValidEmail = (email) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
 
-    const existing = users.find((u) => u.email === email);
-    if (existing) {
-      alert("User with this email already exists.");
-      return;
-    }
+const handleAddManager = () => {
+  if (!name || !email || !password) {
+    alert("Please fill all fields.");
+    return;
+  }
 
-    const newManager = { name, email, password, role: 'manager' };
-    addUser(newManager);
+  if (!isValidEmail(email)) {
+    alert("Please enter a valid email address.");
+    return;
+  }
 
-    setName('');
-    setEmail('');
-    setPassword('');
-    alert('Manager added!');
-  };
+  const existing = users.find((u) => u.email === email);
+  if (existing) {
+    alert("User with this email already exists.");
+    return;
+  }
+
+  const newManager = { name, email, password, role: 'manager' };
+  addUser(newManager);
+
+  setName('');
+  setEmail('');
+  setPassword('');
+  alert('Manager added!');
+};
+
 
   return (
     <div className="p-6 min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-white transition-all">

@@ -10,4 +10,12 @@
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
+  <script>
+  // This will run BEFORE React renders, to avoid flicker
+  const theme = localStorage.getItem("app_theme") || "light";
+  if (theme === "dark") {
+    document.documentElement.classList.add("dark");
+  }
+</script>
+
 </html>
