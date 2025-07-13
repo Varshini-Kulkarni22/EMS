@@ -1,11 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
 import Login from './pages/Login';
-import Signup from './pages/Signup';
 import AdminDashboard from './pages/dashboards/AdminDashboard';
 import ManagerDashboard from './pages/dashboards/ManagerDashboard';
 import EmployeeDashboard from './pages/dashboards/EmployeeDashboard';
-import Kanban from './pages/Kanban';
 import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
 import UserManagement from './pages/UserManagement';
@@ -35,7 +33,7 @@ const App = () => {
           <Route path="/dashboard" element={<Dashboard />} />
           {/* Shared/Extra Pages */}
           <Route path="/reports" element={<Reports />} />
-          <Route path="/kanban" element={<Kanban />} />
+         
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/user-management" element={<UserManagement />} />
